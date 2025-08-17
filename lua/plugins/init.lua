@@ -5,14 +5,48 @@ return {
     opts = require "configs.conform",
   },
 
-  -- These are some examples, uncomment them if you want to see them work!
+
+  -- lsp stuff
   {
     "neovim/nvim-lspconfig",
     config = function()
       require "configs.lspconfig"
     end,
   },
+  {
+    "williamboman/mason.nvim",
+    cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate" },
+    opts = {
+      ensure_installed = {
+        -- lua
+        "stylua",
+        "lua-language-server",
 
+        -- rust
+        "rust-analyzer",
+
+        -- javascript / typescript
+        "typescript-language-server",
+
+        -- python
+        "python-lsp-server"
+      },
+    },
+    config = function(_, opts)
+      dofile(vim.g.base46_cache .. "mason")
+      require("mason").setup(opts)
+
+      -- custom nvchad cmd to install all mason binaries listed
+      vim.api.nvim_create_user_command("MasonInstallAll", function()
+        if opts.ensure_installed and #opts.ensure_installed > 0 then
+          vim.cmd("MasonInstall " .. table.concat(opts.ensure_installed, " "))
+        end
+      end, {})
+
+      vim.g.mason_binaries_list = opts.ensure_installed
+    end,
+  },
+  
   -- test new blink
   -- { import = "nvchad.blink.lazyspec" },
 
@@ -25,4 +59,388 @@ return {
   -- 		},
   -- 	},
   -- },
+
+  --{
+  --  "nvim-telescope/telescope.nvim",
+  --  dependencies = {
+  --    "nvim-lua/plenary.nvim",
+  --    "debugloop/telescope-undo.nvim",
+	--  "nvim-telescope/telescope-file-browser.nvim",
+	--  "nvim-telescope/telescope-live-grep-args.nvim",
+  --    "nvim-treesitter/nvim-treesitter",
+  --    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" }
+  --  },
+  --  cmd = "Telescope",
+  --  init = function()
+  --    --require("core.utils").load_mappings "telescope"
+
+  --    local shortcuts = require "telescope-live-grep-args.shortcuts"
+
+  --    --vim.keymap.set("n", "<leader>fF", function() shortcuts.grep_word_under_cursor({ postfix = " --hidden " }) end, "grep under cursor")
+  --    --vim.keymap.set("n", "<leader>fV", shortcuts.grep_visual_selection({ postfix = " --hidden " }))
+  --    vim.keymap.set("n", "<leader>fF", function() shortcuts.grep_word_under_cursor() end)
+  --    vim.keymap.set("n", "<leader>fV", function() shortcuts.grep_visual_selection() end)
+  --  end,
+  --  opts = function()
+  --    return require "plugins.configs.telescope"
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "telescope")
+  --    local telescope = require "telescope"
+  --    telescope.setup(opts)
+
+  --    -- load extensions
+  --    for _, ext in ipairs(opts.extensions_list) do
+  --      telescope.load_extension(ext)
+  --    end
+  --  end,
+  --},
+
+
+  -- {
+  -- 	"nvim-treesitter/nvim-treesitter",
+  -- 	opts = {
+  -- 		ensure_installed = {
+  -- 			"vim", "lua", "vimdoc",
+  --      "html", "css"
+  -- 		},
+  -- 	},
+  -- },
+  --
+
+  --"nvim-lua/plenary.nvim",
+
+  --{
+  --  "NvChad/base46",
+  --  branch = "v2.0",
+  --  build = function()
+  --    require("base46").load_all_highlights()
+  --  end,
+  --},
+
+  --{
+  --  "NvChad/ui",
+  --  branch = "v2.0",
+  --  lazy = false,
+  --},
+
+  --{
+  --  "zbirenbaum/nvterm",
+  --  --init = function()
+  --  --  require("core.utils").load_mappings "nvterm"
+  --  --end,
+  --  config = function(_, opts)
+  --    require "base46.term"
+  --    require("nvterm").setup(opts)
+  --  end,
+  --},
+
+  --{
+  --  "NvChad/nvim-colorizer.lua",
+  --  event = "User FilePost",
+  --  config = function(_, opts)
+  --    require("colorizer").setup(opts)
+
+  --    -- execute colorizer as soon as possible
+  --    vim.defer_fn(function()
+  --      require("colorizer").attach_to_buffer(0)
+  --    end, 0)
+  --  end,
+  --},
+
+  --{
+  --  "nvim-tree/nvim-web-devicons",
+  --  opts = function()
+  --    return { override = require "nvchad.icons.devicons" }
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "devicons")
+  --    require("nvim-web-devicons").setup(opts)
+  --  end,
+  --},
+
+  --{
+  --  "lukas-reineke/indent-blankline.nvim",
+  --  version = "2.20.7",
+  --  event = "User FilePost",
+  --  opts = function()
+  --    return require("plugins.configs.others").blankline
+  --  end,
+  --  config = function(_, opts)
+  --    --require("core.utils").load_mappings "blankline"
+  --    dofile(vim.g.base46_cache .. "blankline")
+  --    require("indent_blankline").setup(opts)
+  --  end,
+  --},
+
+  --{
+  --  "nvim-treesitter/nvim-treesitter",
+  --  event = { "BufReadPost", "BufNewFile" },
+  --  cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
+  --  build = ":TSUpdate",
+  --  opts = function()
+  --    return require "plugins.configs.treesitter"
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "syntax")
+  --    require("nvim-treesitter.configs").setup(opts)
+  --  end,
+  --},
+
+  ---- git stuff
+  --{
+  --  "lewis6991/gitsigns.nvim",
+  --  event = "User FilePost",
+  --  opts = function()
+  --    return require("plugins.configs.others").gitsigns
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "git")
+  --    require("gitsigns").setup(opts)
+  --  end,
+  --},
+
+  
+
+  --{
+  --  "neovim/nvim-lspconfig",
+  --  event = "User FilePost",
+  --  config = function()
+  --    require "plugins.configs.lspconfig"
+  --  end,
+  --},
+
+  ---- load luasnips + cmp related in insert mode only
+  --{
+  --  "hrsh7th/nvim-cmp",
+  --  event = "InsertEnter",
+  --  dependencies = {
+  --    {
+  --      -- snippet plugin
+  --      "L3MON4D3/LuaSnip",
+  --      dependencies = "rafamadriz/friendly-snippets",
+  --      opts = { history = true, updateevents = "TextChanged,TextChangedI" },
+  --      config = function(_, opts)
+  --        require("plugins.configs.others").luasnip(opts)
+  --      end,
+  --    },
+
+  --    -- autopairing of (){}[] etc
+  --    {
+  --      "windwp/nvim-autopairs",
+  --      opts = {
+  --        fast_wrap = {},
+  --        disable_filetype = { "TelescopePrompt", "vim" },
+  --      },
+  --      config = function(_, opts)
+  --        require("nvim-autopairs").setup(opts)
+
+  --        -- setup cmp for autopairs
+  --        local cmp_autopairs = require "nvim-autopairs.completion.cmp"
+  --        require("cmp").event:on("confirm_done", cmp_autopairs.on_confirm_done())
+  --      end,
+  --    },
+
+  --    -- cmp sources plugins
+  --    {
+  --      "saadparwaiz1/cmp_luasnip",
+  --      "hrsh7th/cmp-nvim-lua",
+  --      "hrsh7th/cmp-nvim-lsp",
+  --      "hrsh7th/cmp-buffer",
+  --      "hrsh7th/cmp-path",
+  --    },
+  --  },
+  --  opts = function()
+  --    return require "plugins.configs.cmp"
+  --  end,
+  --  config = function(_, opts)
+  --    require("cmp").setup(opts)
+  --  end,
+  --},
+
+  --{
+  --  "numToStr/Comment.nvim",
+  --  keys = {
+  --    { "gcc", mode = "n", desc = "Comment toggle current line" },
+  --    { "gc", mode = { "n", "o" }, desc = "Comment toggle linewise" },
+  --    { "gc", mode = "x", desc = "Comment toggle linewise (visual)" },
+  --    { "gbc", mode = "n", desc = "Comment toggle current block" },
+  --    { "gb", mode = { "n", "o" }, desc = "Comment toggle blockwise" },
+  --    { "gb", mode = "x", desc = "Comment toggle blockwise (visual)" },
+  --  },
+  --  --init = function()
+  --  --  require("core.utils").load_mappings "comment"
+  --  --end,
+  --  config = function(_, opts)
+  --    require("Comment").setup(opts)
+  --  end,
+  --},
+
+  ---- file managing , picker etc
+  --{
+  --  "nvim-tree/nvim-tree.lua",
+  --  cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+  --  --init = function()
+  --  --  require("core.utils").load_mappings "nvimtree"
+  --  --end,
+  --  opts = function()
+  --    return require "plugins.configs.nvimtree"
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "nvimtree")
+  --    require("nvim-tree").setup(opts)
+  --  end,
+  --},
+
+  --{
+  --  "nvim-telescope/telescope.nvim",
+  --  dependencies = {
+  --    "nvim-lua/plenary.nvim",
+  --    "debugloop/telescope-undo.nvim",
+	--  "nvim-telescope/telescope-file-browser.nvim",
+	--  "nvim-telescope/telescope-live-grep-args.nvim",
+  --    "nvim-treesitter/nvim-treesitter",
+  --    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" }
+  --  },
+  --  cmd = "Telescope",
+  --  init = function()
+  --    --require("core.utils").load_mappings "telescope"
+
+  --    local shortcuts = require "telescope-live-grep-args.shortcuts"
+
+  --    --vim.keymap.set("n", "<leader>fF", function() shortcuts.grep_word_under_cursor({ postfix = " --hidden " }) end, "grep under cursor")
+  --    --vim.keymap.set("n", "<leader>fV", shortcuts.grep_visual_selection({ postfix = " --hidden " }))
+  --    vim.keymap.set("n", "<leader>fF", function() shortcuts.grep_word_under_cursor() end)
+  --    vim.keymap.set("n", "<leader>fV", function() shortcuts.grep_visual_selection() end)
+  --  end,
+  --  opts = function()
+  --    return require "plugins.configs.telescope"
+  --  end,
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "telescope")
+  --    local telescope = require "telescope"
+  --    telescope.setup(opts)
+
+  --    -- load extensions
+  --    for _, ext in ipairs(opts.extensions_list) do
+  --      telescope.load_extension(ext)
+  --    end
+  --  end,
+  --},
+
+  --{
+  --  "smoka7/hop.nvim",
+  --  keys = {
+  --    {
+  --      ",",
+  --      function()
+  --        require("hop").hint_words()
+  --      end,
+  --      mode = { "n", "x", "o" },
+  --    },
+  --    {
+  --      "s",
+  --      function()
+  --        require("hop").hint_char2()
+  --      end,
+  --      mode = { "n", "x", "o" },
+  --    },
+  --    {
+  --      "f",
+  --      function()
+  --        require("hop").hint_char1 {
+  --          direction = require("hop.hint").HintDirection.AFTER_CURSOR,
+  --          current_line_only = true,
+  --        }
+  --      end,
+  --      mode = { "n", "x", "o" },
+  --    },
+  --    {
+  --      "F",
+  --        function()
+  --          require("hop").hint_char1 {
+  --            direction = require("hop.hint").HintDirection.BEFORE_CURSOR,
+  --            current_line_only = true,
+  --          }
+  --      end,
+  --    }
+  --  }
+  --},
+
+  ---- Only load whichkey after all the gui
+  --{
+  --  "folke/which-key.nvim",
+  --  keys = { "<leader>", "<c-r>", "<c-w>", '"', "'", "`", "c", "v", "g" },
+  --  --init = function()
+  --  --  require("core.utils").load_mappings "whichkey"
+  --  --end,
+  --  cmd = "WhichKey",
+  --  config = function(_, opts)
+  --    dofile(vim.g.base46_cache .. "whichkey")
+  --    require("which-key").setup(opts)
+  --  end,
+  --},
+
+  ---- Harpoon
+  --{
+  --   "ThePrimeagen/harpoon",
+  --   branch = "harpoon2",
+  --   dependencies = { "nvim-lua/plenary.nvim" },
+  --   init = function()
+  --     local harpoon = require("harpoon")
+  --     harpoon:setup()
+
+  --     vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end)
+  --     vim.keymap.set("n", "<leader><tab>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+
+  --     vim.keymap.set("n", "<leader>1", function() harpoon:list():select(1) end)
+  --     vim.keymap.set("n", "<leader>2", function() harpoon:list():select(2) end)
+  --     vim.keymap.set("n", "<leader>3", function() harpoon:list():select(3) end)
+  --     vim.keymap.set("n", "<leader>4", function() harpoon:list():select(4) end)
+
+  --     -- Toggle previous & next buffers stored within Harpoon list
+  --     --vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
+  --     --vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+  --   end,
+  --},
+
+  --{
+  --  "tpope/vim-fugitive",
+  --  event = "VeryLazy",
+  --  dependencies = {
+  --    "tpope/vim-rhubarb",
+  --    "tpope/vim-obsession",
+  --    "tpope/vim-unimpaired",
+  --  },
+  --},
+  --{
+  --  "obsidian-nvim/obsidian.nvim",
+  --  init = function()
+  --      vim.opt_local.conceallevel = 2
+  --  end,
+  --  version = "*", -- recommended, use latest release instead of latest commit
+  --  lazy = true,
+  --  -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+  --  event = {
+  --     -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+  --     -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+  --     -- refer to `:h file-pattern` for more examples
+  --     "BufReadPre " .. vim.fn.expand "~" .. "/Desktop/obsidian/*.md"
+  --     --"BufNewFile path/to/my-vault/*.md",
+  --  },
+  --  ---@module 'obsidian'
+  --  opts = {
+  --    legacy_commands = false,
+  --    workspaces = {
+  --      {
+  --        name = "personal",
+  --        path = "~/Desktop/obsidian/personal"
+  --      },
+  --      {
+  --        name = "bloomberg",
+  --        path = "~/Desktop/obsidian/bloomberg"
+  --      },
+  --    },
+  --  },
+  --},
 }
